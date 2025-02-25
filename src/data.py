@@ -198,12 +198,13 @@ def get_vectorstore(pptx_path=None, pediatric_start_page=None):
         print("새로운 db 생성")
         # 문서 준비 및 Vector Store 생성
         if pptx_path is None:
-            pptx_path = "./KTAS_gauidline.pptx"
+            pptx_path = "src/KTAS_guideline.pptx"
         
         # 데이터 추출
-        documents = extract_medical_codes_from_pptx(pptx_path, pediatric_start_page)
+        data = extract_medical_codes_from_pptx(pptx_path, pediatric_start_page)
         
         # 백업용
+        output_path = "의학코드_추출결과.json"
         save_to_json(data, output_path)
         
         # 문서 변환
@@ -227,7 +228,7 @@ def save_to_json(data, output_path):
 
 # 사용 예시
 if __name__ == "__main__":
-    pptx_path = "./KTAS_gauidline.pptx"   # PPT 파일 경로 
+    pptx_path = "scr/KTAS_guideline.pptx"   # PPT 파일 경로 
     output_path = "의학코드_추출결과.json"  # 결과 저장할 JSON 파일 경로
     pediatric_start_page = 192
 

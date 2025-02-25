@@ -345,4 +345,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# ChromaDB
+.chroma/
+chroma_db/
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,python,venv,dotenv,visualstudiocode,intellij

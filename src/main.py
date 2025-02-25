@@ -1,3 +1,6 @@
+# python main.py 실행
+# 콘솔 테스트용
+
 from rag_system import create_rag_system
 from data import get_vectorstore
 
@@ -14,7 +17,7 @@ def medical_info():
             
     while True:
         sex = get_input("성별을 입력해주세요. (중단은 'q' 입력, 모르면 enter) :").strip()
-        if sex in None:
+        if sex is None:
             return None
         if sex in ["남성", "여성", " "]:
             sex = sex if sex else "미확인"
@@ -77,12 +80,12 @@ def main():
             return None
         
         response = ktas_chain.invoke({
-            "input" : user_info["symptoms"],
+            "input" : user_info["symptoms"],   # 검색 쿼리로 사용할 것
             "sex" : user_info["sex"],
             "age": user_info["age"],
             "vital_signs": user_info["vital_signs"],
             "consciousness": user_info["consciousness"],
-            "underlying_diseases": user_info["underlying_diseases"],
+            "diseases": user_info["diseases"],
             "medications": user_info["medications"]
         })
         
