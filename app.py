@@ -1,8 +1,5 @@
 # (venv)환경에서 streamlit run app.py 명령어 실행
 import streamlit as st
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_upstage import ChatUpstage
 from src.data import get_vectorstore
 from src.rag_system import create_rag_system, get_ktas_prompt
 import os
@@ -114,18 +111,22 @@ if submit_button:
             
             # 2. RAG 시스템 생성
             ktas_chain = create_rag_system(vectorstore)
-            
-            # 3. 체인에 입력 데이터 전달
-            response = ktas_chain.invoke({
-                "input": st.session_state.patient_data["symptoms"],  # retriever 쿼리용
+
+            search_query = f"{symptoms} {vital_signs} {consciousness}"
+            # 3. 체인에 입력 데이터 전달하기 전
+            input_params = {
+                "input": search_query,  # retriever 쿼리용
                 "sex": st.session_state.patient_data["sex"],
                 "age": st.session_state.patient_data["age"],
                 "diseases": st.session_state.patient_data["diseases"],
                 "medications": st.session_state.patient_data["medications"],
                 "vital_signs": st.session_state.patient_data["vital_signs"],
                 "consciousness": st.session_state.patient_data["consciousness"],
-                "symptoms": st.session_state.patient_data["symptoms"]
-            })
+            }
+            st.write("입력 파라미터:", input_params)
+
+            # 이후 RAG 시스템 호출
+            response = ktas_chain.invoke(input_params)
             
             # 4. 응답 처리 및 표시
             st.session_state.assessment_result = response["answer"]
@@ -136,7 +137,7 @@ if st.session_state.assessment_result:
     
     # 결과 카드
     st.subheader("KTAS 평가 결과")
-        
+
     # 실제 구현에서는 아래 하드코딩된 결과를 RAG 시스템의 출력으로 대체
     with st.container():
         st.markdown(st.session_state.assessment_result)
@@ -149,32 +150,3 @@ if st.session_state.assessment_result:
         elif "KTAS 3" in st.session_state.assessment_result:
             st.info("이 환자는 30분 이내 의료진의 진찰이 필요합니다.")
 
-
-# RAG 시스템과 연결하는 함수
-def create_rag_system(vectorstore):
-    # LLM 초기화
-    llm = ChatUpstage(
-        api_key=os.getenv("UPSTAGE_API_KEY"),
-        model="solar-pro"
-    )
-    
-    # 프롬프트 정의
-    prompt = get_ktas_prompt()
-    
-    # 문서 체인 생성
-    document_chain = create_stuff_documents_chain(llm, prompt)
-    
-    # retriever 생성
-    retriever = vectorstore.as_retriever(
-        search_type='mmr',
-        search_kwargs={"k":3}
-    )
-    
-    # 최종 검색-생성 체인 생성
-    retriever_chain = create_retrieval_chain(
-        retriever, 
-        document_chain,
-        input_key="input"  # 증상을 검색 쿼리로 사용
-    )
-
-    return retriever_chain
